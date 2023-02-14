@@ -1,0 +1,129 @@
+﻿using System;
+using System.Collections;
+using System.Text;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace DataOpenV3
+{
+	public class GameScene : SceneBase
+	{
+		// コメントテスト
+	    [SerializeField]
+	    private CountdownAnimationController CuCountDownContoller = null;
+	    public CountdownAnimationController CountDownContoller => CuCountDownContoller;
+	
+	    [SerializeField]
+	    private GameObject CuCountDownRoot = null;
+	    public GameObject CountDownRoot => CuCountDownRoot;
+	
+	    [SerializeField]
+	    private Text CuCountDownText = null;
+	    public Text CountDownText => CuCountDownText;
+	
+	    [SerializeField]
+	    private Text CuGuideText = null;
+	    public Text GuideText => CuGuideText;
+	
+	    [SerializeField]
+	    private Text CuQuestionText = null;
+	    public Text QuestionText => CuQuestionText;
+	
+	    [SerializeField]
+	    private Text CuResultText = null;
+	    public Text ResultText => CuResultText;
+	
+	    [SerializeField]
+	    private Text CuCorrectText = null;
+	    public Text CorrectText => CuCorrectText;
+
+		/*コメント敵
+		*/
+		int test = 0;
+
+	    // コメントだよ
+		private string test2 = string.Empty;
+	
+	    // Start is called before the first frame update
+	    IEnumerator Start() {
+			while (EntryPoint.IsInitialized == false) {
+				yield return null;
+			}
+	
+			// データキャリア
+			GameDataCarrier.Instance.Initialize();
+			GameDataCarrier.Instance.Scene = this;
+			
+			// ステートマシン
+			StateMachineManager.Instance.Init();
+			var stm = StateMachineManager.Instance;
+			stm.CreateStateMachineMap(StateMachineName.Game);
+			stm.AddState(StateMachineName.Game, (int)GameState.Initialize, new GameInitializeState());
+			stm.AddState(StateMachineName.Game, (int)GameState.CountDown, new GameCountDownState());
+			stm.AddState(StateMachineName.Game, (int)GameState.UserWait, new GameUserWaitState());
+	        stm.AddState(StateMachineName.Game, (int)GameState.SpeakWait, new GameSpeakWaitState());
+	        stm.AddState(StateMachineName.Game, (int)GameState.SpeakResult, new GameSpeakResultState());
+	        stm.AddState(StateMachineName.Game, (int)GameState.End, new GameEndState());
+			
+			stm.ChangeState(StateMachineName.Game, (int)GameState.Initialize);
+	
+	        FadeManager.Instance.FadeOut(FadeManager.Type.Mask, 0.5f, null);
+		}
+	
+		// Update is called once per frame
+		void Update()
+		{
+			StateMachineManager.Instance.Update(StateMachineName.Game, Time.deltaTime);
+			UpdateTimer();
+		}
+	
+	    private void UpdateTimer() {
+	        // ユーザー入力待機状態でなければ、処理しない
+	        var stm = StateMachineManager.Instance;
+	        if (
+	            (stm.GetNextState(StateMachineName.Game) == (int)GameState.UserWait) ||
+	            (stm.GetNextState(StateMachineName.Game) == (int)GameState.SpeakWait)
+	        ) {
+	            GameDataCarrier.Instance.CountDownTimer -= Time.deltaTime;
+	            if (GameDataCarrier.Instance.CountDownTimer <= 0f) {
+	                GameDataCarrier.Instance.CountDownTimer = 0f;
+	            }
+	            float pt = GameDataCarrier.Instance.CountDownTimer;
+	            int h = ((int)pt) / 3600;
+	            int m = ((int)pt) % 3600 / 60;
+	            int s = ((int)pt) % 60;
+	            int ms = (int)((pt * 100) % 100f);
+	            CountDownText.text = string.Format("{0:D2}:{1:D2}:{2:D2}:{3:D2}", h, m, s, ms);
+	
+	            if (GameDataCarrier.Instance.CountDownTimer <= 0f) {
+	                GameDataCarrier.Instance.NextSceneName = LocalSceneManager.SceneName.Result;
+	                StateMachineManager.Instance.ChangeState(StateMachineName.Game, (int)GameState.End);
+	            }
+	        }
+	
+	
+		}
+		
+		void OnDestroy()
+		{
+			StateMachineManager.Instance.Release(StateMachineName.Game);
+			if (GameDataCarrier.IsNull() == false) {
+				GameDataCarrier.Instance.Release();
+				GameDataCarrier.DestroyInstance();
+			}
+		}
+		
+		public void OnClickGoToRetireButton()
+		{
+			// ユーザー入力待機状態でなければ、処理しない
+			var stm = StateMachineManager.Instance;
+			if (stm.GetNextState(StateMachineName.Game) != (int)GameState.UserWait) {
+				return;
+			}
+	
+			GameDataCarrier.Instance.NextSceneName = LocalSceneManager.SceneName.Result;
+			StateMachineManager.Instance.ChangeState(StateMachineName.Game, (int)GameState.End);
+		}
+	}
+}
