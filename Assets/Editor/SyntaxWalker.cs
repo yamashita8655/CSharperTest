@@ -188,16 +188,20 @@ namespace HelloWorld
 				}
 			}
 			
-			// private,public,protectedの確認
+			// private,public,protected/async,virtualの確認
 			var modifierTexts = methodList[i].Modifiers.Select(x => x.Text).ToArray();
 			for (int i2 = 0; i2 < modifierTexts.Length; i2++) {
 				Debug.Log(modifierTexts[i2]);
 			}
+			
+			// 引数調べたい
+			var parameterTexts = methodList[i].ParameterList.Parameters.Select(x => x).ToArray();
+			for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
+				Debug.Log(parameterTexts[i2].Identifier.ValueText);
+				//Debug.Log(parameterTexts[i2].);// int aaa とか全文
+			}
 		}
 
-		// priavteかどうか
-		// unitask付いてるかどうか
-		// 引数調べたい
         
 		//Debug.Log("=====propertyList=====");
 		//var propertyList = classDeclaration.DescendantNodes()

@@ -78,7 +78,7 @@ namespace DataOpenV3
 			UpdateTimer();
 		}
 
-	    private void UpdateTimer() {
+	    private async void UpdateTimer() {
 	        // ユーザー入力待機状態でなければ、処理しない
 	        var stm = StateMachineManager.Instance;
 	        if (
@@ -114,7 +114,7 @@ namespace DataOpenV3
 			}
 		}
 		
-		public void OnClickGoToRetireButton()
+		public void OnClickGoToRetireButton(int number, string text, List<int> list)
 		{
 			// ユーザー入力待機状態でなければ、処理しない
 			var stm = StateMachineManager.Instance;
