@@ -77,7 +77,7 @@ namespace DataOpenV3
 			StateMachineManager.Instance.Update(StateMachineName.Game, Time.deltaTime);
 			UpdateTimer();
 		}
-	
+
 	    private void UpdateTimer() {
 	        // ユーザー入力待機状態でなければ、処理しない
 	        var stm = StateMachineManager.Instance;

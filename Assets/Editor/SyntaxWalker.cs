@@ -126,4 +126,94 @@ namespace HelloWorld
 			}
 		}
     }
+	
+	[MenuItem("ShortCutCommand/Syntax3")]
+    private static void Syntax3()
+    {
+        var fileName = "Resources/GameScene.txt";
+
+		StreamReader sr = new StreamReader(@"./Assets/Resources/GameScene.txt", Encoding.GetEncoding("UTF-8"));
+ 
+		string code = sr.ReadToEnd();
+		Debug.Log(code);
+ 
+		sr.Close();
+
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
+        var root = tree.GetCompilationUnitRoot();
+		
+		//// TOPレベルのUsing
+		//SyntaxList<UsingDirectiveSyntax> usingDirectives = root.Usings;
+
+		//// 全Using走査
+		//for (int i = 0; i < usingDirectives.Count; i++) {
+		//	Debug.Log(usingDirectives[i]);
+		//}
+
+		// ネームスペース（次の階層まとまり）を取得
+		//Debug.Log(root.Members.Count);
+		MemberDeclarationSyntax firstMember = root.Members[0];
+		//Debug.Log(firstMember.Kind());
+		var nameSpaceDeclaration = (NamespaceDeclarationSyntax)firstMember;
+
+		// ネームスペース内を走査
+		//Debug.Log(nameSpaceDeclaration.Members.Count);
+		var classDeclaration = (ClassDeclarationSyntax)nameSpaceDeclaration.Members[0];
+		//Debug.Log(classDeclaration.Members.Count);
+		//for (int i = 0; i < classDeclaration.Members.Count; i++) {
+		//	Debug.Log(classDeclaration.Members[i].Kind());
+		//}
+
+		Debug.Log("=====methodList=====");
+        var methodList = classDeclaration.DescendantNodes()
+							.OfType<MethodDeclarationSyntax>().ToList();
+		for (int i = 0; i < methodList.Count; i++) {
+			//Debug.Log(methodList[i].Identifier.GetType());
+			Debug.Log(methodList[i].Identifier.ValueText);
+			if (methodList[i].HasLeadingTrivia == true)
+			{
+				var triviaList = methodList[i].GetLeadingTrivia();
+
+                var commentArray = triviaList.Where(trivia => (!trivia.IsKind(SyntaxKind.WhitespaceTrivia)) && (!trivia.IsKind(SyntaxKind.EndOfLineTrivia))).ToArray();
+				for (int i2 = 0; i2 < commentArray.Length; i2++) {
+					Debug.Log(commentArray[i2]);
+				}
+			}
+		}
+        
+		Debug.Log("=====propertyList=====");
+		var propertyList = classDeclaration.DescendantNodes()
+							.OfType<PropertyDeclarationSyntax>().ToList();
+		for (int i = 0; i < propertyList.Count; i++) {
+			Debug.Log(propertyList[i].Identifier.ValueText);
+		}
+		
+		Debug.Log("=====typeList=====");
+		var typeList = classDeclaration.DescendantNodes()
+							.OfType<TypeDeclarationSyntax>().ToList();
+		for (int i = 0; i < typeList.Count; i++) {
+			Debug.Log(typeList[i].Identifier.ValueText);
+		}
+		
+		Debug.Log("=====fieldList=====");
+		var fieldList = classDeclaration.DescendantNodes()
+							.OfType<FieldDeclarationSyntax>().ToList();
+		for (int i = 0; i < fieldList.Count; i++) {
+			Debug.Log(fieldList[i]);
+
+			// ※これでコメント取れる
+			if (fieldList[i].HasLeadingTrivia == true)
+			{
+				var trivia = fieldList[i].GetLeadingTrivia();
+				Debug.Log("=====true=====");
+				Debug.Log(trivia);
+			}
+
+			// ※これで変数名取れる
+			var syntaxList = fieldList[i].DescendantNodes().ToList();
+			for (int i2 = 0; i2 < syntaxList.Count; i2++) {
+				Debug.Log(syntaxList[i2]);
+			}
+		}
+    }
 }
