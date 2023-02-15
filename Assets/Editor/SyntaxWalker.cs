@@ -180,6 +180,9 @@ namespace HelloWorld
 			// メソッド名
 			Debug.Log(methodList[i].Identifier.ValueText);
 
+			// 戻り値型名
+			Debug.Log(methodList[i].ReturnType);
+
 			if (methodList[i].HasLeadingTrivia == true)
 			{
 				var triviaList = methodList[i].GetLeadingTrivia();
@@ -337,17 +340,18 @@ namespace HelloWorld
 
 			if (methodList[i].HasLeadingTrivia == true)
 			{
-				//var triviaList = methodList[i].GetLeadingTrivia();
-
-                //var commentArray = triviaList.Where(trivia => (!trivia.IsKind(SyntaxKind.WhitespaceTrivia)) && (!trivia.IsKind(SyntaxKind.EndOfLineTrivia))).ToArray();
-				//for (int i2 = 0; i2 < commentArray.Length; i2++) {
-				//	//Debug.Log(commentArray[i2]);
-				//}
-
-				//var commentSyntaxTriviaArray = GetMethodComments(methodList[i]);
-				//for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
-				//	Debug.Log(commentSyntaxTriviaArray[i2]);
-				//}
+				var commentSyntaxTriviaArray = GetMethodComments(methodList[i]);
+				if (commentSyntaxTriviaArray.Length == 0)
+				{
+					methodLogString += "コメントが無いので、記載してください\n";
+				}
+				else
+				{
+					// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
+					// for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
+					// 	Debug.Log(commentSyntaxTriviaArray[i2]);
+					// }
+				}
 			}
 			else
 			{
