@@ -105,7 +105,7 @@ namespace DataOpenV3
 	
 		}
 		
-		void OnDestroy()
+		void OnDestroy(int Test, float need)
 		{
 			StateMachineManager.Instance.Release(StateMachineName.Game);
 			if (GameDataCarrier.IsNull() == false) {
