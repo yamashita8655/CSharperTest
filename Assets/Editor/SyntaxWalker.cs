@@ -9,10 +9,25 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// </summary>
 public class SyntaxWalker : Editor {
+    [MenuItem("ShortCutCommand/RegexTest")]
+    private static void RegexTest()
+    {
+		//string test = "<param name=\"test\">コメント</param>";
+		string test = "<param name=\"test\"><see cref=\"Test\">プロパティを参照</param>";
+
+		//var output = Regex.Match(test, "\"([^\"]*)\"[^\"]*\"([^\"]*)\"");
+		var output = Regex.Matches(test, "\"(.+?)\"");
+
+		for (int i = 0; i < output.Count; i++) {
+			Debug.Log(output[i]);
+		}
+    }
+
     [MenuItem("ShortCutCommand/Syntax")]
     private static void Syntax()
     {
@@ -287,8 +302,10 @@ namespace HelloWorld
 							.OfType<MethodDeclarationSyntax>().ToList();
 
 		string methodLogString = string.Empty;
-		// コメント取得
+		// 関数部分のチェック
 		for (int i = 0; i < methodList.Count; i++) {
+
+			string returnType = methodList[i].ReturnType.ToString();
 
 			methodLogString += "メソッド名：" + methodList[i].Identifier.ValueText + "\n";
 
@@ -337,26 +354,6 @@ namespace HelloWorld
 					methodLogString += "async属性のメソッド名には、末尾にAsyncをつけてください\n";
 				}
 			}
-
-			if (methodList[i].HasLeadingTrivia == true)
-			{
-				var commentSyntaxTriviaArray = GetMethodComments(methodList[i]);
-				if (commentSyntaxTriviaArray.Length == 0)
-				{
-					methodLogString += "コメントが無いので、記載してください\n";
-				}
-				else
-				{
-					// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
-					// for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
-					// 	Debug.Log(commentSyntaxTriviaArray[i2]);
-					// }
-				}
-			}
-			else
-			{
-				methodLogString += "コメントが無いので、記載してください\n";
-			}
 			
 			// 引数調べたい
 			var parameterTexts = GetMethodParameters(methodList[i]);
@@ -369,6 +366,90 @@ namespace HelloWorld
 					methodLogString += "引数" + fullName + "の先頭文字は、小文字にしてください\n";
 				}
 			}
+
+			// コメント調べたい
+			if (methodList[i].HasLeadingTrivia == true)
+			{
+				var commentSyntaxTriviaArray = GetMethodComments(methodList[i]);
+				if (commentSyntaxTriviaArray.Length == 0)
+				{
+					methodLogString += "コメントが無いので、記載してください\n";
+				}
+				else
+				{
+					if (commentSyntaxTriviaArray[0].ToString().Contains("inheritdoc"))
+					{
+						// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
+					}
+					else
+					{
+						// 引数コメント確認用書庫
+						var parameterDict = new Dictionary<string, bool>();
+						for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
+							parameterDict.Add(parameterTexts[i2].Identifier.ValueText, false);
+						}
+
+						bool findSummary = false;
+						bool findReturnParam = false;
+
+						if (returnType == "void")
+						{
+							// 戻り値無しの場合は、戻り値用コメントのチェックは不要
+							findReturnParam = true;
+						}
+
+						// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
+						for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
+							if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
+							{
+								findSummary = true;
+							}
+							
+							if (commentSyntaxTriviaArray[i2].ToString().Contains("<returns>"))
+							{
+								findReturnParam = true;
+							}
+							
+							if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
+							{
+								var parameterComments = Regex.Matches(commentSyntaxTriviaArray[i2].ToString(), "\"(.+?)\"");
+
+								if (parameterComments.Count > 0)
+								{
+									string comment = parameterComments[0].ToString().Replace("\"", "");
+									if (parameterDict.ContainsKey(comment))
+									{
+										parameterDict[comment] = true;
+									}
+								}
+							}
+						}
+
+						if (findSummary == false)
+						{
+							methodLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
+						}
+						
+						if (findReturnParam == false)
+						{
+							methodLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
+						}
+						
+						foreach (var data in parameterDict)
+						{
+							if (data.Value == false)
+							{
+								methodLogString += "引数" + data.Key + "のコメントが無いので、記載してください\n";
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				methodLogString += "コメントが無いので、記載してください\n";
+			}
+			
 		}
 
 		Debug.Log(methodLogString);

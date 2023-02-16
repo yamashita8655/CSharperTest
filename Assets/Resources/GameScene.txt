@@ -105,6 +105,7 @@ namespace DataOpenV3
 	
 		}
 		
+		/// <inheritdoc />
 		void OnDestroy(int Test, float need)
 		{
 			StateMachineManager.Instance.Release(StateMachineName.Game);
@@ -114,6 +115,12 @@ namespace DataOpenV3
 			}
 		}
 		
+		/// <summary>
+		/// コメント
+		/// <summary>
+		/// <param name="number">コメント</param>
+		/// <param name="text"><see cref='Test'>プロパティを参照</param>
+		/// <returns>戻り値説明</returns>
 		public int OnClickGoToRetireButton(int number, string text, List<int> list)
 		{
 			// ユーザー入力待機状態でなければ、処理しない
