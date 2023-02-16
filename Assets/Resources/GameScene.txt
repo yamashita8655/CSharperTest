@@ -16,6 +16,11 @@ namespace DataOpenV3
 	
 	    [SerializeField]
 	    private GameObject CuCountDownRoot = null;
+		
+		/// <summary>
+		/// コメント
+		/// <summary>
+		/// <returns>戻り値説明</returns>
 	    public GameObject CountDownRoot => CuCountDownRoot;
 	
 	    [SerializeField]
@@ -37,6 +42,8 @@ namespace DataOpenV3
 	    [SerializeField]
 	    private Text CuCorrectText = null;
 	    public Text CorrectText => CuCorrectText;
+	    
+		public void PMethod(int test) PMethodText => Debug.Log("");
 
 		/*コメント敵
 		*/

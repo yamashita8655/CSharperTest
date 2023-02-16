@@ -543,109 +543,114 @@ namespace HelloWorld
 				propertyLogString += "private属性のプロパティです。使用しているか、確認してください\n";
 			}
 
-	//		if (modifierTexts.Contains("async"))
-	//		{
-	//			if (!propertyName.EndsWith("Async"))
-	//			{
-	//				propertyLogString += "async属性のメソッド名には、末尾にAsyncをつけてください\n";
-	//			}
-	//		}
+			// プロパティでasyncはつけないのでは。
+			if (modifierTexts.Contains("async"))
+			{
+				propertyLogString += "【警告】Asyncに対するチェックは未実装";
+				//if (!propertyName.EndsWith("Async"))
+				//{
+				//	propertyLogString += "async属性のメソッド名には、末尾にAsyncをつけてください\n";
+				//}
+			}
 			
-	//		// 引数調べたい
-	//		var parameterTexts = GetpropertyParameters(propertyList[i]);
-	//		for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
-	//			string name = parameterTexts[i2].Identifier.ValueText;
-	//			string fullName = parameterTexts[i2].ToString();
-	//			char c1 = name[0];
-	//			if (char.IsLower(c1) != true)
-	//			{
-	//				propertyLogString += "引数" + fullName + "の先頭文字は、小文字にしてください\n";
-	//			}
-	//		}
+			//// プロパティに引数は存在しないのでは
+			//var parameterTexts = GetPropertyParameters(propertyList[i]);
+			//for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
+			//	string name = parameterTexts[i2].Identifier.ValueText;
+			//	string fullName = parameterTexts[i2].ToString();
+			//	char c1 = name[0];
+			//	if (char.IsLower(c1) != true)
+			//	{
+			//		propertyLogString += "引数" + fullName + "の先頭文字は、小文字にしてください\n";
+			//	}
+			//}
 
-	//		// コメント調べたい
-	//		if (propertyList[i].HasLeadingTrivia == true)
-	//		{
-	//			var commentSyntaxTriviaArray = GetpropertyComments(propertyList[i]);
-	//			if (commentSyntaxTriviaArray.Length == 0)
-	//			{
-	//				propertyLogString += "コメントが無いので、記載してください\n";
-	//			}
-	//			else
-	//			{
-	//				if (commentSyntaxTriviaArray[0].ToString().Contains("inheritdoc"))
-	//				{
-	//					// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
-	//				}
-	//				else
-	//				{
-	//					// 引数コメント確認用書庫
-	//					var parameterDict = new Dictionary<string, bool>();
-	//					for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
-	//						parameterDict.Add(parameterTexts[i2].Identifier.ValueText, false);
-	//					}
+			// コメント調べたい
+			if (propertyList[i].HasLeadingTrivia == true)
+			{
+				var commentSyntaxTriviaArray = GetPropertyComments(propertyList[i]);
+				if (commentSyntaxTriviaArray.Length == 0)
+				{
+					propertyLogString += "コメントが無いので、記載してください\n";
+				}
+				else
+				{
+					if (commentSyntaxTriviaArray[0].ToString().Contains("inheritdoc"))
+					{
+						// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
+					}
+					else
+					{
+						// 引数無いはずなので、コメントアウト
+						//// 引数コメント確認用書庫
+						//var parameterDict = new Dictionary<string, bool>();
+						//for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
+						//	parameterDict.Add(parameterTexts[i2].Identifier.ValueText, false);
+						//}
 
-	//					bool findSummary = false;
-	//					bool findReturnParam = false;
+						bool findSummary = false;
+						bool findReturnParam = false;
 
-	//					if (returnType == "void")
-	//					{
-	//						// 戻り値無しの場合は、戻り値用コメントのチェックは不要
-	//						findReturnParam = true;
-	//					}
+						if (returnType == "void")
+						{
+							// 戻り値無しの場合は、戻り値用コメントのチェックは不要
+							findReturnParam = true;
+						}
 
-	//					// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
-	//					for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
-	//						if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
-	//						{
-	//							findSummary = true;
-	//						}
-	//						
-	//						if (commentSyntaxTriviaArray[i2].ToString().Contains("<returns>"))
-	//						{
-	//							findReturnParam = true;
-	//						}
-	//						
-	//						if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
-	//						{
-	//							var parameterComments = Regex.Matches(commentSyntaxTriviaArray[i2].ToString(), "\"(.+?)\"");
+						// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
+						for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
+							if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
+							{
+								findSummary = true;
+							}
+							
+							if (commentSyntaxTriviaArray[i2].ToString().Contains("<returns>"))
+							{
+								findReturnParam = true;
+							}
+							
+							// 引数無いはずなので、コメントアウト
+							//if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
+							//{
+							//	var parameterComments = Regex.Matches(commentSyntaxTriviaArray[i2].ToString(), "\"(.+?)\"");
 
-	//							if (parameterComments.Count > 0)
-	//							{
-	//								string comment = parameterComments[0].ToString().Replace("\"", "");
-	//								if (parameterDict.ContainsKey(comment))
-	//								{
-	//									parameterDict[comment] = true;
-	//								}
-	//							}
-	//						}
-	//					}
+							//	if (parameterComments.Count > 0)
+							//	{
+							//		string comment = parameterComments[0].ToString().Replace("\"", "");
+							//		if (parameterDict.ContainsKey(comment))
+							//		{
+							//			parameterDict[comment] = true;
+							//		}
+							//	}
+							//}
+						}
 
-	//					if (findSummary == false)
-	//					{
-	//						propertyLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
-	//					}
-	//					
-	//					if (findReturnParam == false)
-	//					{
-	//						propertyLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
-	//					}
-	//					
-	//					foreach (var data in parameterDict)
-	//					{
-	//						if (data.Value == false)
-	//						{
-	//							propertyLogString += "引数" + data.Key + "のコメントが無いので、記載してください\n";
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//		else
-	//		{
-	//			propertyLogString += "コメントが無いので、記載してください\n";
-	//		}
-	//		
+						if (findSummary == false)
+						{
+							propertyLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
+						}
+						
+						if (findReturnParam == false)
+						{
+							propertyLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
+						}
+						
+						// 引数無いはずなので、コメントアウト
+						//foreach (var data in parameterDict)
+						//{
+						//	if (data.Value == false)
+						//	{
+						//		propertyLogString += "引数" + data.Key + "のコメントが無いので、記載してください\n";
+						//	}
+						//}
+					}
+				}
+			}
+			else
+			{
+				propertyLogString += "コメントが無いので、記載してください\n";
+			}
+			
 		}
 		return propertyLogString;
 	}
@@ -671,6 +676,15 @@ namespace HelloWorld
     {
 		var parameterTexts = methodNode.ParameterList.Parameters.Select(x => x).ToArray();
 		return parameterTexts;
+	}
+	
+	// コメントの取得
+	public static SyntaxTrivia[] GetPropertyComments(SyntaxNode propertyNode)
+    {
+		var triviaList = propertyNode.GetLeadingTrivia();
+		var commentSyntaxTriviaArray = triviaList.Where(trivia => (!trivia.IsKind(SyntaxKind.WhitespaceTrivia)) && (!trivia.IsKind(SyntaxKind.EndOfLineTrivia))).ToArray();
+
+		return commentSyntaxTriviaArray;
 	}
 	
 	// private/punlic等の修飾子取得
