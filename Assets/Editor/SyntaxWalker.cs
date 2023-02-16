@@ -293,14 +293,61 @@ namespace HelloWorld
 		// ネームスペース内を走査
 		var classDeclaration = (ClassDeclarationSyntax)nameSpaceDeclaration.Members[0];
 
-		Debug.Log("=====methodList=====");
 
 		// ※調査の際に、型タイプ調べる際の方法
 		//Debug.Log(methodList[i].Identifier.GetType());
         
+		// 関数部分のチェック
+		Debug.Log("=====methodList=====");
 		var methodList = classDeclaration.DescendantNodes()
 							.OfType<MethodDeclarationSyntax>().ToList();
+		
+		string methodLogString = CheckMethod(methodList);
+		Debug.Log(methodLogString);
+        
+		Debug.Log("=====propertyList=====");
+		var propertyList = classDeclaration.DescendantNodes()
+							.OfType<PropertyDeclarationSyntax>().ToList();
+		
+		string propertyLogString = CheckProperty(propertyList);
+		Debug.Log(propertyLogString);
+		//for (int i = 0; i < propertyList.Count; i++) {
+		//CheckProperty
+		//	Debug.Log(propertyList[i].Identifier.ValueText);
+		//}
+		//
+		//Debug.Log("=====typeList=====");
+		//var typeList = classDeclaration.DescendantNodes()
+		//					.OfType<TypeDeclarationSyntax>().ToList();
+		//for (int i = 0; i < typeList.Count; i++) {
+		//	Debug.Log(typeList[i].Identifier.ValueText);
+		//}
+		//
+		//Debug.Log("=====fieldList=====");
+		//var fieldList = classDeclaration.DescendantNodes()
+		//					.OfType<FieldDeclarationSyntax>().ToList();
+		//for (int i = 0; i < fieldList.Count; i++) {
+		//	Debug.Log(fieldList[i]);
 
+		//	// ※これでコメント取れる
+		//	if (fieldList[i].HasLeadingTrivia == true)
+		//	{
+		//		var trivia = fieldList[i].GetLeadingTrivia();
+		//		Debug.Log("=====true=====");
+		//		Debug.Log(trivia);
+		//	}
+
+		//	// ※これで変数名取れる
+		//	var syntaxList = fieldList[i].DescendantNodes().ToList();
+		//	for (int i2 = 0; i2 < syntaxList.Count; i2++) {
+		//		Debug.Log(syntaxList[i2]);
+		//	}
+		//}
+    }
+	
+	// メソッドチェック
+	public static string CheckMethod(List<MethodDeclarationSyntax> methodList)
+    {
 		string methodLogString = string.Empty;
 		// 関数部分のチェック
 		for (int i = 0; i < methodList.Count; i++) {
@@ -451,44 +498,157 @@ namespace HelloWorld
 			}
 			
 		}
+		return methodLogString;
+	}
+	
+	// プロパティチェック
+	public static string CheckProperty(List<PropertyDeclarationSyntax> propertyList)
+    {
+		string propertyLogString = string.Empty;
+		
+		// 関数部分のチェック
+		for (int i = 0; i < propertyList.Count; i++) {
 
-		Debug.Log(methodLogString);
-        
-		//Debug.Log("=====propertyList=====");
-		//var propertyList = classDeclaration.DescendantNodes()
-		//					.OfType<PropertyDeclarationSyntax>().ToList();
-		//for (int i = 0; i < propertyList.Count; i++) {
-		//	Debug.Log(propertyList[i].Identifier.ValueText);
-		//}
-		//
-		//Debug.Log("=====typeList=====");
-		//var typeList = classDeclaration.DescendantNodes()
-		//					.OfType<TypeDeclarationSyntax>().ToList();
-		//for (int i = 0; i < typeList.Count; i++) {
-		//	Debug.Log(typeList[i].Identifier.ValueText);
-		//}
-		//
-		//Debug.Log("=====fieldList=====");
-		//var fieldList = classDeclaration.DescendantNodes()
-		//					.OfType<FieldDeclarationSyntax>().ToList();
-		//for (int i = 0; i < fieldList.Count; i++) {
-		//	Debug.Log(fieldList[i]);
+			string returnType = propertyList[i].Type.ToString();
 
-		//	// ※これでコメント取れる
-		//	if (fieldList[i].HasLeadingTrivia == true)
-		//	{
-		//		var trivia = fieldList[i].GetLeadingTrivia();
-		//		Debug.Log("=====true=====");
-		//		Debug.Log(trivia);
-		//	}
+			propertyLogString += "プロパティ名：" + propertyList[i].Identifier.ValueText + "\n";
 
-		//	// ※これで変数名取れる
-		//	var syntaxList = fieldList[i].DescendantNodes().ToList();
-		//	for (int i2 = 0; i2 < syntaxList.Count; i2++) {
-		//		Debug.Log(syntaxList[i2]);
-		//	}
-		//}
-    }
+			string propertyName = propertyList[i].Identifier.ValueText;
+			
+			// private,public,protected/async,virtualの確認
+			var modifierTexts = GetPropertyModifiers(propertyList[i]);
+			if (modifierTexts.Contains("public"))
+			{
+				char c1 = propertyName[0];
+				if (char.IsUpper(c1) != true)
+				{
+					propertyLogString += "public属性のプロパティ名は、先頭大文字にしてください\n";
+				}
+			}
+			else if (modifierTexts.Contains("protected"))
+			{
+				char c1 = propertyName[0];
+				if (char.IsLower(c1) != true)
+				{
+					propertyLogString += "protected属性のプロパティ名は、先頭小文字にしてください\n";
+				}
+			}
+			else if (modifierTexts.Contains("private"))
+			{
+				propertyLogString += "private属性のプロパティです。使用しているか、確認してください\n";
+			}
+			else
+			{
+				// privateと同じ扱い
+				propertyLogString += "private属性のプロパティです。使用しているか、確認してください\n";
+			}
+
+	//		if (modifierTexts.Contains("async"))
+	//		{
+	//			if (!propertyName.EndsWith("Async"))
+	//			{
+	//				propertyLogString += "async属性のメソッド名には、末尾にAsyncをつけてください\n";
+	//			}
+	//		}
+			
+	//		// 引数調べたい
+	//		var parameterTexts = GetpropertyParameters(propertyList[i]);
+	//		for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
+	//			string name = parameterTexts[i2].Identifier.ValueText;
+	//			string fullName = parameterTexts[i2].ToString();
+	//			char c1 = name[0];
+	//			if (char.IsLower(c1) != true)
+	//			{
+	//				propertyLogString += "引数" + fullName + "の先頭文字は、小文字にしてください\n";
+	//			}
+	//		}
+
+	//		// コメント調べたい
+	//		if (propertyList[i].HasLeadingTrivia == true)
+	//		{
+	//			var commentSyntaxTriviaArray = GetpropertyComments(propertyList[i]);
+	//			if (commentSyntaxTriviaArray.Length == 0)
+	//			{
+	//				propertyLogString += "コメントが無いので、記載してください\n";
+	//			}
+	//			else
+	//			{
+	//				if (commentSyntaxTriviaArray[0].ToString().Contains("inheritdoc"))
+	//				{
+	//					// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
+	//				}
+	//				else
+	//				{
+	//					// 引数コメント確認用書庫
+	//					var parameterDict = new Dictionary<string, bool>();
+	//					for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
+	//						parameterDict.Add(parameterTexts[i2].Identifier.ValueText, false);
+	//					}
+
+	//					bool findSummary = false;
+	//					bool findReturnParam = false;
+
+	//					if (returnType == "void")
+	//					{
+	//						// 戻り値無しの場合は、戻り値用コメントのチェックは不要
+	//						findReturnParam = true;
+	//					}
+
+	//					// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
+	//					for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
+	//						if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
+	//						{
+	//							findSummary = true;
+	//						}
+	//						
+	//						if (commentSyntaxTriviaArray[i2].ToString().Contains("<returns>"))
+	//						{
+	//							findReturnParam = true;
+	//						}
+	//						
+	//						if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
+	//						{
+	//							var parameterComments = Regex.Matches(commentSyntaxTriviaArray[i2].ToString(), "\"(.+?)\"");
+
+	//							if (parameterComments.Count > 0)
+	//							{
+	//								string comment = parameterComments[0].ToString().Replace("\"", "");
+	//								if (parameterDict.ContainsKey(comment))
+	//								{
+	//									parameterDict[comment] = true;
+	//								}
+	//							}
+	//						}
+	//					}
+
+	//					if (findSummary == false)
+	//					{
+	//						propertyLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
+	//					}
+	//					
+	//					if (findReturnParam == false)
+	//					{
+	//						propertyLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
+	//					}
+	//					
+	//					foreach (var data in parameterDict)
+	//					{
+	//						if (data.Value == false)
+	//						{
+	//							propertyLogString += "引数" + data.Key + "のコメントが無いので、記載してください\n";
+	//						}
+	//					}
+	//				}
+	//			}
+	//		}
+	//		else
+	//		{
+	//			propertyLogString += "コメントが無いので、記載してください\n";
+	//		}
+	//		
+		}
+		return propertyLogString;
+	}
     
 	// コメントの取得
 	public static SyntaxTrivia[] GetMethodComments(SyntaxNode methodNode)
@@ -511,5 +671,12 @@ namespace HelloWorld
     {
 		var parameterTexts = methodNode.ParameterList.Parameters.Select(x => x).ToArray();
 		return parameterTexts;
+	}
+	
+	// private/punlic等の修飾子取得
+	public static string[] GetPropertyModifiers(BasePropertyDeclarationSyntax propertyNode)
+    {
+		var modifierTexts = propertyNode.Modifiers.Select(x => x.Text).ToArray();
+		return modifierTexts;
 	}
 }
