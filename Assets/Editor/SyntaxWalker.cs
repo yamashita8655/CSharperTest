@@ -387,17 +387,17 @@ namespace HelloWorld
 			else if (modifierTexts.Contains("protected"))
 			{
 				char c1 = methodName[0];
-				if (char.IsLower(c1) != true)
+				if (char.IsUpper(c1) != true)
 				{
-					methodLogString += "protected属性のメソッド名は、先頭小文字にしてください\n";
+					methodLogString += "protected属性のメソッド名は、先頭大文字にしてください\n";
 				}
 			}
 			else if (modifierTexts.Contains("private"))
 			{
 				char c1 = methodName[0];
-				if (char.IsLower(c1) != true)
+				if (char.IsUpper(c1) != true)
 				{
-					methodLogString += "private属性のメソッド名は、先頭小文字にしてください\n";
+					methodLogString += "private属性のメソッド名は、先頭大文字にしてください\n";
 				}
 			}
 			else
