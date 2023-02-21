@@ -671,7 +671,6 @@ namespace HelloWorld
 		return propertyLogString;
 	}
 	
-#if true 
 	// フィールドチェック
 	public static string CheckField(List<FieldDeclarationSyntax> fieldList)
     {
@@ -834,7 +833,6 @@ namespace HelloWorld
 		}
 		return fieldLogString;
 	}
-#endif
     
 	// コメントの取得
 	public static SyntaxTrivia[] GetMethodComments(SyntaxNode methodNode)
