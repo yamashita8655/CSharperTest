@@ -464,7 +464,7 @@ namespace HelloWorld
 				}
 				string filePathAndName = files[j].Replace("\\", "/");
 				string[] stringList = filePathAndName.Split('/');
-				string tag = stringList[stringList.Length-2];
+				string tag = stringList[stringList.Length-1].Replace(".cs", "");
 				string resultFile = "TargetCs/Result/" + tag + "Result.txt";
 				File.WriteAllText(resultFile, output);
 			}
@@ -869,24 +869,12 @@ namespace HelloWorld
 						}
 
 						bool findSummary = false;
-						bool findReturnParam = false;
-
-						if (returnType == "void")
-						{
-							// 戻り値無しの場合は、戻り値用コメントのチェックは不要
-							findReturnParam = true;
-						}
 
 						// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
 						for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
 							if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
 							{
 								findSummary = true;
-							}
-							
-							if (commentSyntaxTriviaArray[i2].ToString().Contains("<returns>"))
-							{
-								findReturnParam = true;
 							}
 							
 							if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
@@ -907,11 +895,6 @@ namespace HelloWorld
 						if (findSummary == false)
 						{
 							methodLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
-						}
-						
-						if (findReturnParam == false)
-						{
-							methodLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
 						}
 						
 						foreach (var data in parameterDict)
