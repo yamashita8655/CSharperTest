@@ -126,9 +126,11 @@ namespace DataOpenV3
 		/// コメント
 		/// <summary>
 		/// <param name="number">コメント</param>
+		/// <param name="orange">コメント</param>
 		/// <param name="text"><see cref='Test'>プロパティを参照</param>
+		/// <param name="list">プロパティを参照</param>
 		/// <returns>戻り値説明</returns>
-		public int OnClickGoToRetireButton(int number, string text, List<int> list)
+		public int OnClickGoToRetireButton(int number, int orange, string text, List<int> list)
 		{
 			// ユーザー入力待機状態でなければ、処理しない
 			var stm = StateMachineManager.Instance;
