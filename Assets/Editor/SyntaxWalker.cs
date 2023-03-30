@@ -695,6 +695,12 @@ namespace HelloWorld
 					constructorLogString += "引数" + fullName + "の先頭文字は、小文字にしてください\n";
 				}
 			}
+			
+			// 引数コメント確認用書庫
+			var parameterDict = new Dictionary<string, bool>();
+			for (int i3 = 0; i3 < parameterTexts.Length; i3++) {
+				parameterDict.Add(parameterTexts[i3].Identifier.ValueText, false);
+			}
 
 			// コメント調べたい
 			if (constructorList[i].HasLeadingTrivia == true)
@@ -706,37 +712,27 @@ namespace HelloWorld
 				}
 				else
 				{
-					if (commentSyntaxTriviaArray[0].ToString().Contains("inheritdoc"))
+					string[] lineList = commentSyntaxTriviaArray[0].ToString().Split('\n');
+					bool findSummary = false;
+					bool findInheritdoc = false;
+					for (int i2 = 0; i2 < lineList.Length; i2++)
 					{
-						// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
-					}
-					else
-					{
-						// 引数コメント確認用書庫
-						var parameterDict = new Dictionary<string, bool>();
-						for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
-							parameterDict.Add(parameterTexts[i2].Identifier.ValueText, false);
+						if (lineList[i2].ToString().Contains("inheritdoc"))
+						{
+							// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
+							findInheritdoc = true;
+							break;
 						}
-
-						bool findSummary = false;
-						bool findReturnParam = false;
-
-						// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
-						for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
-							if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
+						else
+						{
+							if (lineList[i2].ToString().Contains("<summary>"))
 							{
 								findSummary = true;
 							}
 							
-							if (commentSyntaxTriviaArray[i2].ToString().Contains("<returns>"))
+							if (lineList[i2].ToString().Contains("<param name"))
 							{
-								findReturnParam = true;
-							}
-							
-							if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
-							{
-								var parameterComments = Regex.Matches(commentSyntaxTriviaArray[i2].ToString(), "\"(.+?)\"");
-
+								var parameterComments = Regex.Matches(lineList[i2].ToString(), "\"(.+?)\"");
 								if (parameterComments.Count > 0)
 								{
 									string comment = parameterComments[0].ToString().Replace("\"", "");
@@ -747,15 +743,17 @@ namespace HelloWorld
 								}
 							}
 						}
+					}
 
+					if (findInheritdoc == true)
+					{
+						// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
+					}
+					else
+					{
 						if (findSummary == false)
 						{
 							constructorLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
-						}
-						
-						if (findReturnParam == false)
-						{
-							constructorLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
 						}
 						
 						foreach (var data in parameterDict)
@@ -895,6 +893,14 @@ namespace HelloWorld
 						}
 					}
 
+					bool findReturnParam = false;
+
+					if (returnType == "void")
+					{
+						// 戻り値無しの場合は、戻り値用コメントのチェックは不要
+						findReturnParam = true;
+					}
+
 					if (findInheritdoc == true)
 					{
 						// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
@@ -906,6 +912,11 @@ namespace HelloWorld
 							methodLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
 						}
 						
+						if (findReturnParam == false)
+						{
+							methodLogString += "戻り値のコメントが無いので、<returns>を記載してください\n";
+						}
+						
 						foreach (var data in parameterDict)
 						{
 							if (data.Value == false)
@@ -914,62 +925,12 @@ namespace HelloWorld
 							}
 						}
 					}
-
-					//if (commentSyntaxTriviaArray[0].ToString().Contains("inheritdoc"))
-					//{
-					//	// 継承元のコメントを参照するはずなので、他のコメントチェックルールは無視
-					//}
-					//else
-					//{
-					//	// 引数コメント確認用書庫
-					//	var parameterDict = new Dictionary<string, bool>();
-					//	for (int i2 = 0; i2 < parameterTexts.Length; i2++) {
-					//		parameterDict.Add(parameterTexts[i2].Identifier.ValueText, false);
-					//	}
-
-					//	bool findSummary = false;
-
-					//	// Doc形式かどうかと、引数が変数名分あるか、戻り値の説明があるか
-					//	for (int i2 = 0; i2 < commentSyntaxTriviaArray.Length; i2++) {
-					//		if (commentSyntaxTriviaArray[i2].ToString().Contains("<summary>"))
-					//		{
-					//			findSummary = true;
-					//		}
-					//		
-					//		if (commentSyntaxTriviaArray[i2].ToString().Contains("<param name"))
-					//		{
-					//			var parameterComments = Regex.Matches(commentSyntaxTriviaArray[i2].ToString(), "\"(.+?)\"");
-					//			if (parameterComments.Count > 0)
-					//			{
-					//				string comment = parameterComments[0].ToString().Replace("\"", "");
-					//				if (parameterDict.ContainsKey(comment))
-					//				{
-					//					parameterDict[comment] = true;
-					//				}
-					//			}
-					//		}
-					//	}
-
-					//	if (findSummary == false)
-					//	{
-					//		methodLogString += "doc形式のコメントが無いので、<summary>を記載してください\n";
-					//	}
-					//	
-					//	foreach (var data in parameterDict)
-					//	{
-					//		if (data.Value == false)
-					//		{
-					//			methodLogString += "引数" + data.Key + "のコメントが無いので、記載してください\n";
-					//		}
-					//	}
-					//}
 				}
 			}
 			else
 			{
 				methodLogString += "コメントが無いので、記載してください\n";
 			}
-			
 		}
 		return methodLogString;
 	}
@@ -1161,7 +1122,7 @@ namespace HelloWorld
 			else if (modifierTexts.Contains("private"))
 			{
 				char c1 = variables[0].Identifier.ToString()[0];
-				if (char.IsUpper(c1) != true)
+				if (char.IsLower(c1) != true)
 				{
 					fieldLogString += "private属性のフィールド名は、先頭小文字にしてください\n";
 				}
@@ -1170,7 +1131,7 @@ namespace HelloWorld
 			{
 				// privateと同じ扱い
 				char c1 = variables[0].Identifier.ToString()[0];
-				if (char.IsUpper(c1) != true)
+				if (char.IsLower(c1) != true)
 				{
 					fieldLogString += "private属性のフィールド名は、先頭小文字にしてください\n";
 				}
